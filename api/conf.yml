@@ -1,0 +1,29 @@
+general:
+    helptext: iohub Publishing Engine 1 - api proxy v1.0
+
+mail:
+    helptext: Send error messages to email address, like missing playlist; unvalid
+        json format; missing clip path. Leave recipient blank, if you don't need this.
+        'mail_level' can be WARNING or ERROR.
+    subject: "io prx api Error"
+    smpt_server: "mail.example.org"
+    smpt_port: 587
+    sender_addr: "iohub@example.org"
+    sender_pass: "abc123"
+    recipient:
+    mail_level: "ERROR"
+
+server:
+    helptext: bla bla
+    server_name: "_defaultServer_"
+    port: 8087
+    root_endpoint: "/"
+    base_endpoint: "/v2/servers/_defaultServer_/vhosts/_defaultVHost_/"
+
+logging:
+    helptext: Logging to file, if 'log_to_file' False log to console. Path to /var/log/
+        only if you run this program as deamon. 'log_level' can be DEBUG, INFO, WARNING,
+        ERROR.
+    log_to_file: True
+    log_path: "/var/log/iopublishprxapi/"
+    log_level: "INFO"
