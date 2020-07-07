@@ -24,8 +24,10 @@ app = Flask(__name__)
 # ----------------------
 with open(r'conf.yml') as configfile:
     configuration = yaml.load(configfile, Loader=yaml.FullLoader)
-    base_endpoint = configuration['server']['base_endpoint']
-    serverName = configuration['server']['server_name']
+    api_proxy_url = configuration['api_proxy_server']['api_proxy_url']
+    serverName = configuration['api_proxy_server']['server_name']
+    apiUrl = configuration['publisher-engine']['api_url']
+    apiPort = str(configuration['publisher-engine']['port'])
 
 # ----------------------
 # Root
@@ -38,7 +40,7 @@ def index():
 # system configuration
 # ----------------------
 # Return Default system configuration
-@app.route(base_endpoint , methods=['GET'])
+@app.route(api_proxy_url , methods=['GET'])
 def getServerConfig():
     with open(r'conf.yml') as config_file:
         # The FullLoader parameter handles the conversion from YAML
@@ -51,17 +53,17 @@ def getServerConfig():
 # Applications
 # ----------------------
 # Applications : Retrieves the list of Applications for the specifed server
-# GET: get /v2/servers/{serverName}/vhosts/{vhostName}/applications0
-@app.route(base_endpoint + 'applications', methods=['GET'])
+# GET: get /v2/servers/{serverName}/vhosts/{vhostName}/applications
+@app.route(api_proxy_url + 'applications', methods=['GET'])
 def getApplications():
-    response = requests.get('http://127.0.0.1:8000/applications/')
+    response = requests.get(apiUrl + ':' + apiPort + '/applications/')
     root = ET.fromstring(response.content)
     import xml.etree.ElementTree as etree
     xml_root = etree.Element('Applications')
     xml_root.set('serverName', serverName)
     for app in root.findall('*'):
         app_name = app.find('name')
-        app_href = base_endpoint + 'applications/' + app_name.text
+        app_href = api_proxy_url + 'applications/' + app_name.text
         app_description = app.find('description')
         app_type = app.find('type')
         xml_items = etree.SubElement(xml_root, 'Application')
@@ -81,9 +83,9 @@ def getApplications():
 
 # Applications : Retrieves the specified Application configuration
 # GET: get /v2/servers/{serverName}/vhosts/{vhostName}/applications/{appName}
-@app.route(base_endpoint + 'applications/<name>', methods=['GET'])
+@app.route(api_proxy_url + 'applications/<name>', methods=['GET'])
 def getApplication(name):
-    response = requests.get('http://127.0.0.1:8000/applications/?name=' + name)
+    response = requests.get(apiUrl + ':' + apiPort + '/applications/?name=' + name)
     root = ET.fromstring(response.content)
     import xml.etree.ElementTree as etree
     xml_root = etree.Element('Application')
@@ -108,10 +110,49 @@ def getApplication(name):
 
 
 # Applications : Adds an Application to the list of Applications for the specifed vhost
-# post /v2/servers/{serverName}/vhosts/{vhostName}/applications/
+# post /v2/servers/{serverName}/vhosts/{vhostName}/applications/{appName}
+@app.route(api_proxy_url + 'applications/<name>', methods=['POST'])
+def addApplication(name):
+    if not request.json or not 'name' in request.json:
+        abort(400)
+    app_name = request.json['name']
+    app_type = request.json['appType']
+    app_description = request.json['description']
+    req_url = apiUrl + ':' + apiPort + '/applications/'
+    import xml.etree.ElementTree as etree
+    xml_root = etree.Element('root')
+    xml_item_name = etree.Element('name')
+    xml_item_name.text = app_name
+    xml_root.append(xml_item_name)
+    xml_item_type = etree.Element('type')
+    xml_item_type.text = app_type
+    xml_root.append(xml_item_type)
+    xml_item_description = etree.Element('description')
+    xml_item_description.text = app_description
+    xml_root.append(xml_item_description)
+    doc_type = '<?xml version="1.0" encoding="UTF-8" ?>'
+    _tostring = etree.tostring(xml_root).decode('utf-8')
+    xml_data = (f"'{doc_type}{_tostring}'").replace('\'', '')
+    headers = {'Content-Type': 'application/xml'}
+    # Give the object representing the XML file to requests.post.
+    r = requests.post(req_url, headers=headers, data=xml_data)
+    if r.status_code == 201:
+        return Response(r.text, mimetype='text/xml'), 201
+    elif r.status_code == 400 and 'application with this name already exists' in r.text:
+        return Response(r.text, mimetype='text/xml'), 400
+    else:
+        return Response(r.text, mimetype='text/xml'), 404
 
 
-
+# Applications : Adds the specified advanced Application configuration
+# post /v2/servers/{serverName}/vhosts/{vhostName}/applications/{appName}
+@app.route(api_proxy_url + 'applications/<name>/adv', methods=['POST'])
+def addApplicationAdv(name):
+    r = name
+    return (r, 200)
+    #if not request.json or not 'name' in request.json:
+    #    abort(400)
+    #app_name = request.json['name']
 
 
 if __name__ == '__main__':

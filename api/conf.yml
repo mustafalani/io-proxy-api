@@ -13,12 +13,16 @@ mail:
     recipient:
     mail_level: "ERROR"
 
-server:
+api_proxy_server:
     helptext: bla bla
     server_name: "_defaultServer_"
     port: 8087
     root_endpoint: "/"
-    base_endpoint: "/v2/servers/_defaultServer_/vhosts/_defaultVHost_/"
+    api_proxy_url: "/v2/servers/_defaultServer_/vhosts/_defaultVHost_/"
+
+publisher-engine:
+    api_url: http://127.0.0.1
+    port: 8000
 
 logging:
     helptext: Logging to file, if 'log_to_file' False log to console. Path to /var/log/
