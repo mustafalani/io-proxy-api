@@ -158,9 +158,7 @@ def addApplicationAdv(name):
 # post /v2/servers/{serverName}/vhosts/{vhostName}/applications/{appName}
 @app.route(api_proxy_url + 'applications/<name>', methods=['DELETE'])
 def deleteApplication(name):
-    if not request.json or not 'name' in request.json:
-        abort(400)
-    app_name = request.json['name']
+    app_name = name
     req_url = apiUrl + ':' + apiPort + '/applications/' + app_name
     r = requests.delete(req_url)
     if r.status_code == 204:
