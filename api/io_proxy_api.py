@@ -154,6 +154,21 @@ def addApplicationAdv(name):
     #    abort(400)
     #app_name = request.json['name']
 
+# Applications : Adds an Application to the list of Applications for the specifed vhost
+# post /v2/servers/{serverName}/vhosts/{vhostName}/applications/{appName}
+@app.route(api_proxy_url + 'applications/<name>', methods=['DELETE'])
+def deleteApplication(name):
+    if not request.json or not 'name' in request.json:
+        abort(400)
+    app_name = request.json['name']
+    req_url = apiUrl + ':' + apiPort + '/applications/' + app_name
+    r = requests.delete(req_url)
+    if r.status_code == 204:
+        return Response('The application ' + app_name + ' has been deleted', mimetype='text/xml'), 200
+    elif r.status_code == 404 and 'Not found.' in r.text:
+        return Response(r.text, mimetype='text/xml'), 404
+    else:
+        return Response(r.text, mimetype='text/xml'), 400
 
 if __name__ == '__main__':
     app.run(debug=False)
