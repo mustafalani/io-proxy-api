@@ -214,9 +214,9 @@ def getServerCurrentStatistics():
     memorytotalcmd = str(subprocess.Popen("free -m | awk 'NR == 2 { print $2 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
     memoryfreecmd = str(subprocess.Popen("free -m | awk 'NR == 2 { print $4 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
     memoryusedcmd = str(subprocess.Popen("free -m | awk 'NR == 2 { print $3 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
-    disktotalcmd = str(subprocess.Popen("df -h / | awk 'NR == 2 { print $2 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT,shell=True).communicate()[0], encoding).replace("\n", "")
-    diskfreecmd = str(subprocess.Popen("df -h / | awk 'NR == 2 { print $4 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
-    diskusedcmd = str(subprocess.Popen("df -h / | awk 'NR == 2 { print $3 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
+    disktotalcmd = str(subprocess.Popen("df / | awk 'NR == 2 { print $2 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT,shell=True).communicate()[0], encoding).replace("\n", "")
+    diskfreecmd = str(subprocess.Popen("df / | awk 'NR == 2 { print $4 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
+    diskusedcmd = str(subprocess.Popen("df / | awk 'NR == 2 { print $3 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
     import xml.etree.ElementTree as etree
     xml_root = etree.Element('CurrentMachineStatistics')
     serveruptime = etree.SubElement(xml_root, 'ServerUptime')
