@@ -205,6 +205,39 @@ def getServerStatus():
     xml_out = (f"'{doc_type}{_tostring}'").replace('\'', '')
     return Response(xml_out, mimetype='text/xml')
 ###
+# Server -  Server Curent Statistics
+# GET: /v2/servers/_defaultServer_/status
+@app.route('/v2/machine/monitoring/current', methods=['GET'])
+def getServerCurrentStatistics():
+    encoding = 'utf-8'
+    uptime = str(subprocess.Popen("uptime | awk -F ',' ' {print $1} ' | awk ' {print $3} ' | awk -F ':' ' {hrs=$1; min=$2; print hrs*24*3600 + min} '", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
+    memorytotalcmd = str(subprocess.Popen("free -m | awk 'NR == 2 { print $2 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
+    memoryfreecmd = str(subprocess.Popen("free -m | awk 'NR == 2 { print $4 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
+    memoryusedcmd = str(subprocess.Popen("free -m | awk 'NR == 2 { print $3 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
+    disktotalcmd = str(subprocess.Popen("df -h / | awk 'NR == 2 { print $2 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT,shell=True).communicate()[0], encoding).replace("\n", "")
+    diskfreecmd = str(subprocess.Popen("df -h / | awk 'NR == 2 { print $4 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
+    diskusedcmd = str(subprocess.Popen("df -h / | awk 'NR == 2 { print $3 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
+    import xml.etree.ElementTree as etree
+    xml_root = etree.Element('CurrentMachineStatistics')
+    serveruptime = etree.SubElement(xml_root, 'ServerUptime')
+    serveruptime.text = uptime
+    memorytotal = etree.SubElement(xml_root, 'MemoryTotal')
+    memorytotal.text = memorytotalcmd
+    memoryfree = etree.SubElement(xml_root, 'MemoryFree')
+    memoryfree.text = memoryfreecmd
+    memoryused = etree.SubElement(xml_root, 'MemoryUsed')
+    memoryused.text = memoryusedcmd
+    disktotal = etree.SubElement(xml_root, 'DiskTotal')
+    disktotal.text = disktotalcmd
+    diskfree = etree.SubElement(xml_root, 'DiskFree')
+    diskfree.text = diskfreecmd
+    diskused = etree.SubElement(xml_root, 'DiskUsed')
+    diskused.text = diskusedcmd
+    doc_type = '<?xml version="1.0" encoding="UTF-8" ?>'
+    _tostring = etree.tostring(xml_root).decode('utf-8')
+    xml_out = (f"'{doc_type}{_tostring}'").replace('\'', '')
+    return Response(xml_out, mimetype='text/xml')
+###
 # Server - restart nginx status
 # PUT: v2/servers/_defaultServer_/actions/restart
 @app.route('/v2/servers/_defaultServer_/actions/restart', methods=['PUT'])
