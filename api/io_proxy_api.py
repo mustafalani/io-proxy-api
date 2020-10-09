@@ -210,7 +210,7 @@ def getServerStatus():
 @app.route('/v2/machine/monitoring/current', methods=['GET'])
 def getServerCurrentStatistics():
     encoding = 'utf-8'
-    uptime = str(subprocess.Popen("uptime | awk -F ',' ' {print $1} ' | awk ' {print $3} ' | awk -F ':' ' {hrs=$1; min=$2; print hrs*24*3600 + min} '", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
+    uptime = str(subprocess.Popen("awk '{print $1}' /proc/uptime", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
     memorytotalcmd = str(subprocess.Popen("free -m | awk 'NR == 2 { print $2 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
     memoryfreecmd = str(subprocess.Popen("free -m | awk 'NR == 2 { print $4 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
     memoryusedcmd = str(subprocess.Popen("free -m | awk 'NR == 2 { print $3 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
