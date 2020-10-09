@@ -29,6 +29,7 @@ with open(r'conf.yml') as configfile:
     serverName = configuration['api_proxy_server']['server_name']
     apiUrl = configuration['publisher-engine']['api_url']
     apiPort = str(configuration['publisher-engine']['port'])
+    versoin = str(configuration['api_proxy_server']['version'])
 
 # ----------------------
 # Root
@@ -157,6 +158,7 @@ def addApplicationAdv(name):
     r = name
     return (r, 200)
 
+
 # Applications - Delete App: Delete an Application from the list of Applications for the specifed vhost
 # DEL: /v2/servers/{serverName}/vhosts/{vhostName}/applications/{appName}
 @app.route(api_proxy_url + 'applications/<name>', methods=['DELETE'])
@@ -179,6 +181,30 @@ def deleteApplication(name):
 # ----------------------
 # Server
 # ----------------------
+# Server -  Server status
+# GET: /v2/servers/_defaultServer_/status
+@app.route('/v2/servers/_defaultServer_/status', methods=['GET'])
+def getServerStatus():
+    encoding = 'utf-8'
+    hostname= str(subprocess.Popen('hostname', stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
+    uptime = str(subprocess.Popen("uptime | awk -F ',' ' {print $1} ' | awk ' {print $3} ' | awk -F ':' ' {hrs=$1; min=$2; print hrs*24*3600 + min} '", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
+    os = str(subprocess.Popen('lsb_release -a', stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
+    import xml.etree.ElementTree as etree
+    xml_root = etree.Element('ServerStatus')
+    xml_root.set('serverName', serverName)
+    apiversion = etree.SubElement(xml_root, 'Version')
+    apiversion.text = versoin
+    iohubpubname = etree.SubElement(xml_root, 'ioPubName')
+    iohubpubname.text = hostname
+    timerunning = etree.SubElement(xml_root, 'TimeRunning')
+    timerunning.text = uptime
+    osversion = etree.SubElement(xml_root, 'OSVersion')
+    osversion.text = os
+    doc_type = '<?xml version="1.0" encoding="UTF-8" ?>'
+    _tostring = etree.tostring(xml_root).decode('utf-8')
+    xml_out = (f"'{doc_type}{_tostring}'").replace('\'', '')
+    return Response(xml_out, mimetype='text/xml')
+###
 # Server - restart nginx status
 # PUT: v2/servers/_defaultServer_/actions/restart
 @app.route('/v2/servers/_defaultServer_/actions/restart', methods=['PUT'])

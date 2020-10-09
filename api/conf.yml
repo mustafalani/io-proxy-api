@@ -14,7 +14,7 @@ mail:
     mail_level: "ERROR"
 
 api_proxy_server:
-    helptext: bla bla
+    version: beta
     server_name: "_defaultServer_"
     port: 8087
     root_endpoint: "/"
