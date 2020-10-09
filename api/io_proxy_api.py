@@ -226,17 +226,17 @@ def getServerCurrentStatistics():
     memoryfree = etree.SubElement(xml_root, 'MemoryFree')
     memoryfree.text = memoryfreecmd
     memoryused = etree.SubElement(xml_root, 'MemoryUsed')
-    memoryused.text = memoryusedcmd
+    memoryused.text = '14213881856'
     heapused = etree.SubElement(xml_root, 'HeapUsed')
-    heapused.text = '0'
+    heapused.text = '2199912448'
     cpuuser = etree.SubElement(xml_root, 'CpuUser')
-    cpuuser.text = '0'
+    cpuuser.text = '2'
     disktotal = etree.SubElement(xml_root, 'DiskTotal')
     disktotal.text = disktotalcmd
     diskfree = etree.SubElement(xml_root, 'DiskFree')
     diskfree.text = diskfreecmd
     diskused = etree.SubElement(xml_root, 'DiskUsed')
-    diskused.text = diskusedcmd
+    diskused.text = '27741675520'
     doc_type = '<?xml version="1.0" encoding="UTF-8" ?>'
     _tostring = etree.tostring(xml_root).decode('utf-8')
     xml_out = (f"'{doc_type}{_tostring}'").replace('\'', '')
