@@ -14,6 +14,7 @@ from flask import Flask, jsonify, request, abort, make_response, Response
 import urllib.request
 import requests
 import xml.etree.ElementTree as ET
+encoding = 'utf-8'
 
 
 app = Flask(__name__)
@@ -30,6 +31,7 @@ with open(r'conf.yml') as configfile:
     apiUrl = configuration['publisher-engine']['api_url']
     apiPort = str(configuration['publisher-engine']['port'])
     versoin = str(configuration['api_proxy_server']['version'])
+
 
 # ----------------------
 # Root
@@ -209,7 +211,6 @@ def getServerStatus():
 # GET: /v2/servers/_defaultServer_/status
 @app.route('/v2/machine/monitoring/current', methods=['GET'])
 def getServerCurrentStatistics():
-    encoding = 'utf-8'
     uptime = str(subprocess.Popen("awk '{print int($1)}' /proc/uptime", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
     memorytotalcmd = str(subprocess.Popen("free -m | awk 'NR == 2 { print $2 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
     memoryfreecmd = str(subprocess.Popen("free -m | awk 'NR == 2 { print $4 }'", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding).replace("\n","")
@@ -246,9 +247,9 @@ def getServerCurrentStatistics():
 # PUT: v2/servers/_defaultServer_/actions/restart
 @app.route('/v2/servers/_defaultServer_/actions/restart', methods=['PUT'])
 def restart():
-    restart_cmd = "ls"
-    output = subprocess.Popen(restart_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-    print(output.returncode)
+    restart_cmd = "service nginx restart"
+    output = str(subprocess.Popen(restart_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True).communicate()[0], encoding)
+    return Response(output)
 
 if __name__ == '__main__':
     app.run(debug=False)
