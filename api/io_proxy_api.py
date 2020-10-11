@@ -242,7 +242,63 @@ def getServerCurrentStatistics():
     _tostring = etree.tostring(xml_root).decode('utf-8')
     xml_out = (f"'{doc_type}{_tostring}'").replace('\'', '')
     return Response(xml_out, mimetype='text/xml')
+
+
 ###
+# Server -  Application Stream Stat
+# GET: applications/tv3-outgoing/instances
+@app.route(api_proxy_url + 'applications/<name>/instances', methods=['GET'])
+def getAppStreamsStat(name):
+# check if the app exist
+    response = requests.get(apiUrl + ':' + apiPort + '/applications/' + name)
+    if response.status_code == 404:
+        xml_out = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><error><code>404</code><message>The server has not found anything matching the request URI</message></error>"
+        return Response(xml_out, status=404, mimetype='text/xml')
+    else:
+        payload = ''
+        response = requests.request("GET", apiUrl, data=payload)
+        import xml.etree.ElementTree as elt
+        import xml.etree.ElementTree as etree
+        xml_root = etree.Element('Instances')
+        xml_root.set('serverName', serverName)
+        xml_item_instancelist = etree.Element('InstanceList')
+        xml_root.append(xml_item_instancelist)
+        xml_item_name = etree.Element('Name')
+        xml_item_name.text = '_definst_'
+        xml_item_instancelist.append(xml_item_name)
+        xml_item_appname = etree.Element('AppLication Name')
+        xml_item_appname.text = name
+        xml_item_instancelist.append(xml_item_appname)
+        xml_item_incomingstreams = etree.Element('IncomingStreams')
+        xml_item_instancelist.append(xml_item_incomingstreams)
+        root = elt.parse('response').getroot()
+        for server in root.findall('server'):
+            for application in server.findall('application'):
+                appname = application.find('name').text
+                if name == appname:
+                    for live in application.findall('live'):
+                        for stream in live.findall('stream'):
+                            xml_item_incomingstream = etree.Element('IncomingStream')
+                            xml_item_incomingstreams.append(xml_item_incomingstream)
+                            streamname = stream.find('name').text
+                            xml_item_incomingstreamname = etree.Element('Name')
+                            xml_item_incomingstreamname.text = streamname
+                            xml_item_incomingstream.append(xml_item_incomingstreamname)
+                            for client in stream.findall('client'):
+                                address = client.find('address').text
+                                port = client.find('port').text
+                                xml_item_sourceip = etree.Element('SourceIp')
+                                xml_item_sourceip.text = 'rtmp://' + address + ':' + port
+                                xml_item_incomingstream.append(xml_item_sourceip)
+        doc_type = '<?xml version="1.0" encoding="UTF-8" ?>'
+        _tostring = etree.tostring(xml_root).decode('utf-8')
+        xml_out = (f"'{doc_type}{_tostring}'").replace('\'', '')
+        return Response(xml_out, mimetype='text/xml')
+
+
+
+
+
 # Server - restart nginx status
 # PUT: v2/servers/_defaultServer_/actions/restart
 @app.route('/v2/servers/_defaultServer_/actions/restart', methods=['PUT'])
