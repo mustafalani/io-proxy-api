@@ -256,7 +256,7 @@ def getAppStreamsStat(name):
         return Response(xml_out, status=404, mimetype='text/xml')
     else:
         payload = ''
-        response = requests.request("GET", apiUrl, data=payload)
+        response = requests.request("GET", apiUrl + '/stat', data=payload)
         import xml.etree.ElementTree as elt
         import xml.etree.ElementTree as etree
         xml_root = etree.Element('Instances')
@@ -271,7 +271,7 @@ def getAppStreamsStat(name):
         xml_item_instancelist.append(xml_item_appname)
         xml_item_incomingstreams = etree.Element('IncomingStreams')
         xml_item_instancelist.append(xml_item_incomingstreams)
-        root = elt.parse('response').getroot()
+        root = elt.fromstring(response.content)
         for server in root.findall('server'):
             for application in server.findall('application'):
                 appname = application.find('name').text
@@ -290,6 +290,13 @@ def getAppStreamsStat(name):
                                 xml_item_sourceip = etree.Element('SourceIp')
                                 xml_item_sourceip.text = 'rtmp://' + address + ':' + port
                                 xml_item_incomingstream.append(xml_item_sourceip)
+                                xml_item_isconnected = etree.Element('IsConnected')
+                                xml_item_isconnected.text = 'true'
+                                xml_item_incomingstream.append(xml_item_isconnected)
+                                xml_item_isrecordingset= etree.Element('IsRecordingSet')
+                                xml_item_isrecordingset.text = 'false'
+                                xml_item_incomingstream.append(xml_item_isrecordingset)
+
         doc_type = '<?xml version="1.0" encoding="UTF-8" ?>'
         _tostring = etree.tostring(xml_root).decode('utf-8')
         xml_out = (f"'{doc_type}{_tostring}'").replace('\'', '')
